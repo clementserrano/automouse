@@ -44,10 +44,12 @@ program
   .command("launch <name>")
   .alias("l")
   .description("Start routine")
-  .action(name => launch(name));
+  .option('-r, --repeat <number>', 'Number of repetitions')
+  .action((name, options) => launch(name, options.repeat ? +options.repeat : 1));
 
 // Actions functions
 function record(name) {
+  console.log('Start recording')
   mode = "record";
   currentFile = name;
   start = new Date();
@@ -55,25 +57,29 @@ function record(name) {
   iohook.start();
 };
 
-function launch(name) {
+function launch(name, repeat) {
   currentFile = name;
   mode = "launch";
-  fs.readFile(folder + name + ".json", 'utf8', (err, data) => iterateRoutine(err, data));
+  fs.readFile(folder + name + ".json", 'utf8', (err, data) => iterateRoutine(err, data, repeat));
 };
 
-async function iterateRoutine(err, data) {
+async function iterateRoutine(err, data, repeat) {
   if (err) {
     console.log(err)
   } else {
     routine = JSON.parse(data);
     iohook.start();
-    for (const routineLine of routine) {
-      console.log(routineLine)
-      console.log('Wait ' + routineLine.wait + 'ms')
-      await sleep(routineLine.wait);
-      console.log('Move to x=' + routineLine.x + '    y=' + routineLine.y)
-      robot.moveMouseSmooth(routineLine.x, routineLine.y);
-      robot.mouseClick();
+    console.log('Launch routine ' + repeat + ' times')
+    for (var i = 0; i < repeat; i++) {
+      console.log('Start routine ' + (i + 1))
+      for (const routineLine of routine) {
+        console.log(routineLine)
+        console.log('Wait ' + routineLine.wait + 'ms')
+        await sleep(routineLine.wait);
+        console.log('Move to x=' + routineLine.x + '    y=' + routineLine.y)
+        robot.moveMouseSmooth(routineLine.x, routineLine.y);
+        robot.mouseClick();
+      }
     }
     iohook.stop();
   }
