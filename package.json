@@ -1,0 +1,15 @@
+{
+  "name": "automouse",
+  "version": "1.0.0",
+  "description": "Yes",
+  "main": "automouse.js",
+  "dependencies": {
+    "robotjs": "^0.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fredpoilu",
+  "license": "ISC"
+}
