@@ -14,11 +14,14 @@ var start = new Date();
 
 // Record behavior
 iohook.on("mouseclick", event => {
-  const position = robot.getMousePos();
-  const time = { wait: +util.format("%d", new Date() - start) };
-  const routineAction = Object.assign({}, time, position);
-  console.log(routineAction)
-  routine.push(routineAction);
+  if (mode === "record") {
+    const position = robot.getMousePos();
+    const time = { wait: +util.format("%d", new Date() - start) };
+    start = new Date();
+    const routineAction = Object.assign({}, time, position);
+    console.log(routineAction)
+    routine.push(routineAction);
+  }
 });
 
 // Escape behavior
@@ -63,11 +66,16 @@ async function iterateRoutine(err, data) {
     console.log(err)
   } else {
     routine = JSON.parse(data);
+    iohook.start();
     for (const routineLine of routine) {
+      console.log(routineLine)
+      console.log('Wait ' + routineLine.wait + 'ms')
       await sleep(routineLine.wait);
+      console.log('Move to x=' + routineLine.x + '    y=' + routineLine.y)
       robot.moveMouseSmooth(routineLine.x, routineLine.y);
       robot.mouseClick();
     }
+    iohook.stop();
   }
   quit();
 }
@@ -79,7 +87,7 @@ function sleep(ms) {
 }
 
 function stop() {
-  if (mode == "record") {
+  if (mode === "record") {
     iohook.stop();
     fs.writeFile(folder + currentFile + ".json", JSON.stringify(routine), "utf8", err => {
       if (err) {
@@ -89,12 +97,14 @@ function stop() {
       }
       quit();
     });
-  } else if (mode == "launch") {
+  } else if (mode === "launch") {
+    iohook.stop();
     quit();
   }
 };
 
 function quit() {
+  console.log("Bye-bye...")
   process.exit(0);
 };
 
